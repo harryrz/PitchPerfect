@@ -1,0 +1,70 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/Runze Zhao/Desktop/PitchPerfect
+vcontrolpath
+Z1 !s110 1700750301
+!i10b 1
+!s100 <U:DZzzeZgEciKm7gBhJh2
+IP_HI8S3E;O;8Q7@:A;z@f1
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1700710001
+Z4 8project.v
+Z5 Fproject.v
+L0 7
+Z6 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z7 !s108 1700750301.000000
+Z8 !s107 project.v|
+Z9 !s90 -reportprogress|300|project.v|
+!i113 1
+Z10 tCvgOpt 0
+vdatapath
+R1
+!i10b 1
+!s100 >8JC=m_7=TRAQM^je18g`0
+ImhMjH<5TaamlWD9O7igUD3
+R2
+R0
+R3
+R4
+R5
+L0 140
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+vpitchperfect
+R1
+!i10b 1
+!s100 Z3R:kA_VZ`i;SoTCzVP`R0
+IeOn>_GcGmIPg>LG?Ie]l70
+R2
+R0
+R3
+R4
+R5
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10

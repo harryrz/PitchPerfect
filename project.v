@@ -1,0 +1,141 @@
+module pitchperfect();
+endmodule
+
+
+
+
+module controlpath(CLOCK_50, PS2_CLK, PS2_DAT, resetn, ps2_key_data, ps2_key_pressed, keyPressedCode, current_state);
+    input CLOCK_50, resetn;
+
+    input PS2_CLK, PS2_DAT;
+				// this is a register that stores the CODEWORD for 7 different notes (8 bits each), this traindataset will
+                               // be fed into an audio output module when in the TR_FIRST_NOTE state and output the audio
+    output reg [5:0] current_state;
+    reg [5:0] next_state;
+
+    input		    [7:0] ps2_key_data;
+    input			ps2_key_pressed;
+
+
+    output reg [7:0] keyPressedCode; //register to store data
+
+
+    localparam HOME_SCREEN          = 5'd0,
+               TRAIN_MODE           = 5'd1,
+               GAME_MODE            = 5'd2,
+               TR_FIRST_NOTE        = 5'd3,
+               TR_LOAD_FIRST_NOTE   = 5'd4,
+               TR_CHECK_FIRST       = 5'd5,
+               TR_SECOND_NOTE       = 5'd6,
+               TR_LOAD_SECOND_NOTE  = 5'd7,
+               TR_CHECK_SECOND      = 5'd8,
+               TR_THIRD_NOTE        = 5'd9,
+               TR_LOAD_THIRD_NOTE   = 5'd10,
+               TR_CHECK_THIRD       = 5'd11,
+               TR_FOURTH_NOTE       = 5'd12,
+               TR_LOAD_FOURTH_NOTE  = 5'd13,
+               TR_CHECK_FOURTH      = 5'd14,
+               TR_FIFTH_NOTE        = 5'd15,
+               TR_LOAD_FIFTH_NOTE   = 5'd16,
+               TR_CHECK_FIFTH       = 5'd17,
+               TR_SIXTH_NOTE        = 5'd18,
+               TR_LOAD_SIXTH_NOTE   = 5'd19,
+               TR_CHECK_SIXTH       = 5'd20,
+               TR_SEVENTH_NOTE      = 5'd21,
+               TR_LOAD_SEVENTH_NOTE = 5'd22,
+               TR_CHECK_SEVENTH     = 5'd23;
+
+
+               
+
+
+
+    always @ (*)
+    begin: state_table
+            case(current_state)
+                HOME_SCREEN: 
+                    begin
+                    if(keyPressedCode == 8'b00101100) next_state = TRAIN_MODE;
+                    else if(keyPressedCode == 8'b00110100) next_state = GAME_MODE;
+                    else next_state = HOME_SCREEN;
+                    end
+                TRAIN_MODE: next_state = (keyPressedCode == 8'b00101001)? TR_FIRST_NOTE : TRAIN_MODE;
+                TR_FIRST_NOTE: next_state = TR_LOAD_FIRST_NOTE;
+                TR_LOAD_FIRST_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_FIRST: TR_LOAD_FIRST_NOTE;
+                TR_CHECK_FIRST: next_state = (keyPressedCode == 8'b00011100)? TR_SECOND_NOTE: TR_FIRST_NOTE; // key = 1c = A
+                TR_SECOND_NOTE: next_state = TR_LOAD_SECOND_NOTE;
+                TR_LOAD_SECOND_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_SECOND: TR_LOAD_SECOND_NOTE;
+                TR_CHECK_SECOND: next_state = (keyPressedCode == 8'b00110010)? TR_THIRD_NOTE: TR_SECOND_NOTE; // key = 32 = B
+                TR_THIRD_NOTE: next_state = TR_LOAD_THIRD_NOTE;
+                TR_LOAD_THIRD_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_THIRD: TR_LOAD_THIRD_NOTE;
+                TR_CHECK_THIRD: next_state = (keyPressedCode == 8'b00100001)? TR_FOURTH_NOTE: TR_THIRD_NOTE; // key = 21 = C
+                TR_FOURTH_NOTE: next_state = TR_LOAD_FOURTH_NOTE;
+                TR_LOAD_FOURTH_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_FOURTH: TR_LOAD_FOURTH_NOTE;
+                TR_CHECK_FOURTH: next_state = (keyPressedCode == 8'b00100011)? TR_FIFTH_NOTE: TR_FOURTH_NOTE; // key = 23 = D
+                TR_FIFTH_NOTE: next_state = TR_LOAD_FIFTH_NOTE;
+                TR_LOAD_FIFTH_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_FIFTH: TR_LOAD_FIFTH_NOTE;
+                TR_CHECK_FIFTH: next_state = (keyPressedCode == 8'b00101000)? TR_SIXTH_NOTE: TR_FIFTH_NOTE; //key = 24 = E
+                TR_SIXTH_NOTE: next_state = TR_LOAD_SIXTH_NOTE;
+                TR_LOAD_SIXTH_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_SIXTH: TR_LOAD_SIXTH_NOTE;
+                TR_CHECK_SIXTH: next_state = (keyPressedCode == 8'b00101011)? TR_SEVENTH_NOTE: TR_SIXTH_NOTE; //key = 2B = F
+                TR_SEVENTH_NOTE: next_state = TR_LOAD_SEVENTH_NOTE;
+                TR_LOAD_SEVENTH_NOTE: next_state = (ps2_key_pressed)? TR_CHECK_SEVENTH: TR_LOAD_SEVENTH_NOTE;
+                TR_CHECK_SEVENTH: next_state = (keyPressedCode == 8'b00111000)? HOME_SCREEN: TR_SEVENTH_NOTE; //key = 34 = G
+                default: next_state = HOME_SCREEN;
+	     endcase
+     end
+                
+
+     always @ (posedge CLOCK_50)
+        if(!resetn)
+            begin
+                keyPressedCode <= 0;
+                current_state <= HOME_SCREEN;
+            end
+        else if(ps2_key_pressed)
+            begin
+                keyPressedCode <= ps2_key_data;
+                current_state <= next_state;
+            end
+        else current_state <= next_state;
+
+
+/*
+
+    PS2_Controller PS2 (
+	// Inputs
+	.CLOCK_50			(CLOCK_50),
+	.reset				(~KEY[0]),
+
+	// Bidirectionals
+	.PS2_CLK			(PS2_CLK),
+ 	.PS2_DAT			(PS2_DAT),
+
+	// Outputs
+	.received_data		(ps2_key_data),
+	.received_data_en	(ps2_key_pressed)
+);
+
+    audio A1(
+    .aud_xclk(AUD_XCK),
+    .bclk(AUD_BCLK) 		, // bit stream clock
+    .adclrck(AUD_ADCLRCK)	, // left right clock ADC
+    .adcdat(AUD_ADCDAT)	, // data stream ADC
+    .daclrck(AUD_DACLRCK)	, // left right clock DAC
+    .dacdat(AUD_DACDAT)	, // data stream DAC
+    .sclk(I2C_SCLK)		, // serial clock I2C
+    .sdat(I2C_SCLK)		, // serail data I2C
+    .swt(KEY[0])		,
+    .clk(CLOCK_50)		,
+    .gpio(GPIO_0)
+    )
+               
+
+
+*/
+
+    
+endmodule
+
+module datapath();
+endmodule
